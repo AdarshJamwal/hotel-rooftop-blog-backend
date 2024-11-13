@@ -5,9 +5,16 @@ if (!JWT_SECRET) {
   throw new Error("JWT_SECRET_KEY is missing from environment variables.");
 }
 
+const getTokenFromHeader = (req) => {
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
+    return req.headers.authorization.split(" ")[1];
+  }
+  return null;
+};
+
 const verifyToken = (req, res, next) => {
   try {
-    const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+    const token = req.cookies.token || getTokenFromHeader(req);
 
     if (!token) {
       console.log("Token not provided in request");
