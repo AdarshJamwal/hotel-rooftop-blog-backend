@@ -1,27 +1,36 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET_KEY; 
+const JWT_SECRET = process.env.JWT_SECRET_KEY;
 
-
-const verifyToken = (req, res, next)=>{
-    try {
-        const token = req.cookies.token;
-       //const token = req.headers.authorization?.split(' ')[1]; //Bearer Token
-       if(!token){
-        return res.status(401).send({message: "No Token provided"})
-       }
-       const decoded = jwt.verify(token, JWT_SECRET);
-       if(!decoded.userId){
-        return res.status(401).send({message: "Invalid token provided"})
-       }
-       req.userId = decoded.userId;
-       req.role = decoded.role;
-       next();
-       
-    } catch (error) {
-        console.error("Error verify Token", error);
-        res.status(401).send({message: "Invalid Token"})
-    }
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET_KEY is missing from environment variables.");
 }
 
-module.exports =  verifyToken
+const verifyToken = (req, res, next) => {
+  try {
+    // Try to retrieve the token from cookies or Authorization header
+    const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    // Ensure the token contains a valid `userId`
+    if (!decoded.userId) {
+      return res.status(401).json({ message: "Invalid token provided" });
+    }
+
+    // Attach decoded information to the request object
+    req.userId = decoded.userId;
+    req.role = decoded.role;
+    next();
+
+  } catch (error) {
+    console.error("Error verifying token:", error);
+    res.status(401).json({ message: "Invalid token" });
+  }
+};
+
+module.exports = verifyToken;
