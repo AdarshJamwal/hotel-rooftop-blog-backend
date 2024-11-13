@@ -8,7 +8,7 @@ const generateToken = async(userId)=>{
         if(!user){
             throw new Error("User not found")
         }
-        const token = jwt.sign({userId: user._id, role: user.role}, JWT_SECRET, {expiresIn: '24h'})
+        const token = jwt.sign({userId: user._id, role: user.role}, JWT_SECRET, {expiresIn: '1h'})
         return token;
     } catch (error) {
         console.error("Error generating token", error);
